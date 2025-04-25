@@ -5,6 +5,12 @@ from PyQt5.QtCore import Qt
 
 class GameUI(QMainWindow):
     def __init__(self, world, player, tile_size=16):
+        # Ensure a QApplication exists before creating any QWidget
+        app = QApplication.instance()
+        if app is None:
+            app = QApplication(sys.argv)
+        # store the application instance for later use
+        self.app = app
         super().__init__()
         self.world = world
         self.player = player
@@ -46,6 +52,6 @@ class GameUI(QMainWindow):
             self.update()
 
     def run(self):
-        app = QApplication(sys.argv)
+        # Show the main window and start the event loop using stored QApplication
         self.show()
-        sys.exit(app.exec_())
+        sys.exit(self.app.exec_())
