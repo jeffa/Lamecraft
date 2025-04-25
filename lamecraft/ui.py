@@ -1,7 +1,9 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QtGui import QPainter, QColor
+from PyQt5.QtGui import QPainter, QColor, QPixmap
 from PyQt5.QtCore import Qt
+import os
+from .crafting import INGREDIENTS
 
 class GameUI(QMainWindow):
     def __init__(self, world, player, tile_size=16):
@@ -17,6 +19,12 @@ class GameUI(QMainWindow):
         self.tile_size = tile_size
         self.setWindowTitle('Lamecraft')
         self.setFixedSize(self.world.width * self.tile_size, self.world.height * self.tile_size)
+        # Load sprites for world items
+        self.item_sprites = {}
+        sprite_dir = os.path.join(os.path.dirname(__file__), 'sprites')
+        for ingredient in INGREDIENTS:
+            pixmap = QPixmap(os.path.join(sprite_dir, f'{ingredient}.png'))
+            self.item_sprites[ingredient] = pixmap
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -32,6 +40,19 @@ class GameUI(QMainWindow):
                 else:
                     color = QColor(139, 137, 137)
                 painter.fillRect(x * self.tile_size, y * self.tile_size, self.tile_size, self.tile_size, color)
+        # Draw items on the world map
+        for (ix, iy), items in self.world.items.items():
+            for ingredient in items:
+                pixmap = self.item_sprites.get(ingredient)
+                if pixmap and not pixmap.isNull():
+                    painter.drawPixmap(ix * self.tile_size, iy * self.tile_size, self.tile_size, self.tile_size, pixmap)
+                else:
+                    # Fallback: draw a small yellow dot for the item
+                    painter.setBrush(QColor(255, 255, 0))
+                    size = self.tile_size // 2
+                    offset = (self.tile_size - size) // 2
+                    painter.drawEllipse(ix * self.tile_size + offset, iy * self.tile_size + offset, size, size)
+        # Draw player
         painter.setBrush(QColor(255, 0, 0))
         painter.drawEllipse(self.player.x * self.tile_size, self.player.y * self.tile_size, self.tile_size, self.tile_size)
 
