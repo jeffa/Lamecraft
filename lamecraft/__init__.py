@@ -1,0 +1,1 @@
+# Lamecraft package initialization
